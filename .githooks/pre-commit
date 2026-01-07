@@ -1,0 +1,15 @@
+#!/bin/sh
+set -e
+
+# Simple pre-commit scanner for obvious secret patterns in staged diffs.
+# This is not a replacement for a full secret scanner, but it will catch common mistakes.
+
+STAGED_DIFF=$(git diff --cached -U0)
+
+if printf "%s" "$STAGED_DIFF" | grep -nE "sk-|eyJhbGci|NEXT_PUBLIC_SUPABASE_ANON_KEY|SUPABASE_SERVICE_ROLE_KEY|OPENAI_API_KEY" > /dev/null 2>&1; then
+  echo "ERROR: Potential secret detected in staged changes. Commit aborted."
+  printf "%s" "$STAGED_DIFF" | grep -nE "sk-|eyJhbGci|NEXT_PUBLIC_SUPABASE_ANON_KEY|SUPABASE_SERVICE_ROLE_KEY|OPENAI_API_KEY" || true
+  exit 1
+fi
+
+exit 0
